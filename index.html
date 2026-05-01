@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Dashboard Project</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <h1 class="main-title">JavaScript API Dashboard</h1>
+    <div class="grid-container">
+
+        <section class="grid-item" id="dog-api">
+            <h2>🐶 Random Dog Image</h2>
+            <button onclick="getDogImage()">Get Dog Image</button>
+            <div class="output" id="dog-output"></div>
+        </section>
+
+        <section class="grid-item" id="cat-api">
+            <h2>🐱 Random Cat Image</h2>
+            <button onclick="getCatImage()">Get Kitty Image</button>
+            <div class="output" id="cat-output"></div>
+        </section>
+
+        <section class="grid-item" id="cat-fact-api">
+            <h2>🐱 Random Cat Fact</h2>
+            <button onclick="getCatFact()">Get Kitty Fact</button>
+            <div class="output" id="cat-fact-output"></div>
+        </section>
+
+        <section class="grid-item" id="joke-api">
+            <h2>🤣 Random Dad Joke</h2>
+            <button onclick="getJoke()">Get Joke</button>
+            <div class="output" id="joke-output"></div>
+        </section>
+
+        <section class="grid-item" id="weather-api">
+            <h2>☀️ What's the weather today?</h2>
+            <button onclick="getWeather()">Get Weather</button>
+            <div class="output" id="weather-output"></div>
+        </section>
+
+        <section class="grid-item" id="movies-api">
+            <h2>&#127916; Top 3 Family Movies</h2>
+            <button onclick="getMovies()">Get Movies</button>
+            <div class="output" id="movies-output"></div>
+        </section>
+
+        <section class="grid-item" id="public-api">
+            <h2>💼 Find a Job!</h2>
+            <input type="text" id="job-search" placeholder="e.g. javascript, python..." />
+            <button onclick="getJobInfo()">Search Jobs</button>
+            <div class="output" id="jobs-output"></div>
+        </section>
+
+        <section class="grid-item" id="events-api">
+            <h2>🎟️ Local Events</h2>
+            <button onclick="getLocalEvents()">Find Events Near Me</button>
+            <div class="output" id="events-output"></div>
+        </section>
+    </div>
+
+
+</body>
+
+</html>
