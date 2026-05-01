@@ -1,7 +1,95 @@
+function setLoadingSkeleton(outputId, options = {}) {
+  const output = document.getElementById(outputId);
+  if (!output) {
+    return;
+  }
+
+  const includeImage = options.includeImage || false;
+  output.innerHTML = `
+    <div class="skeleton">
+      ${includeImage ? '<div class="skeleton-line image"></div>' : ""}
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  `;
+}
+
+function stampCardFromOutput(outputId) {
+  const output = document.getElementById(outputId);
+  const card = output?.closest(".grid-item");
+  if (!card) {
+    return;
+  }
+
+  let stamp = card.querySelector(".updated-at");
+  if (!stamp) {
+    stamp = document.createElement("p");
+    stamp.className = "updated-at";
+    card.appendChild(stamp);
+  }
+
+  const updatedTime = new Date().toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  stamp.textContent = `Updated ${updatedTime}`;
+}
+
+function applyTheme(themeName) {
+  const allowedThemes = ["electric", "sunset", "midnight"];
+  const nextTheme = allowedThemes.includes(themeName) ? themeName : "electric";
+  document.body.dataset.theme = nextTheme;
+  localStorage.setItem("apiDashboardTheme", nextTheme);
+
+  const select = document.getElementById("theme-select");
+  if (select) {
+    select.value = nextTheme;
+  }
+}
+
+function shuffleAllApis() {
+  getDogImage();
+  getCatImage();
+  getCatFact();
+  getJoke();
+  getWeather();
+  getMovies();
+  getJobInfo();
+  getBibleVerse();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("apiDashboardTheme") || "electric";
+  applyTheme(savedTheme);
+
+  const themeSelect = document.getElementById("theme-select");
+  themeSelect?.addEventListener("change", (event) => {
+    applyTheme(event.target.value);
+  });
+
+  const jobSearchInput = document.getElementById("job-search");
+  const savedJobSearch = localStorage.getItem("apiDashboardJobSearch") || "";
+  if (jobSearchInput) {
+    jobSearchInput.value = savedJobSearch;
+
+    jobSearchInput.addEventListener("input", () => {
+      localStorage.setItem("apiDashboardJobSearch", jobSearchInput.value);
+    });
+
+    jobSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        getJobInfo();
+      }
+    });
+  }
+});
+
 // Dog API Function
 async function getDogImage() {
   const dogImgDiv = document.getElementById("dog-output");
-  dogImgDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("dog-output", { includeImage: true });
 
   try {
     const response = await fetch("https://dog.ceo/api/breeds/image/random");
@@ -14,13 +102,15 @@ async function getDogImage() {
     }
   } catch (error) {
     dogImgDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("dog-output");
   }
 }
 
 // Cat API Function
 async function getCatImage() {
   const catImgDiv = document.getElementById("cat-output");
-  catImgDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("cat-output", { includeImage: true });
 
   try {
     const response = await fetch("https://api.thecatapi.com/v1/images/search");
@@ -33,13 +123,15 @@ async function getCatImage() {
     }
   } catch (error) {
     catImgDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("cat-output");
   }
 }
 
 // Cat Fact API Function
 async function getCatFact() {
   const catFactDiv = document.getElementById("cat-fact-output");
-  catFactDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("cat-fact-output");
 
   try {
     const endpoints = [
@@ -84,13 +176,15 @@ async function getCatFact() {
     }
   } catch (error) {
     catFactDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("cat-fact-output");
   }
 }
 
 // Joke API Function
 async function getJoke() {
   const jokeDiv = document.getElementById("joke-output");
-  jokeDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("joke-output");
 
   try {
     const response = await fetch("https://icanhazdadjoke.com/", {
@@ -113,13 +207,15 @@ async function getJoke() {
     }
   } catch (error) {
     jokeDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("joke-output");
   }
 }
 
 // Weather API Function
 async function getWeather() {
   const weatherDiv = document.getElementById("weather-output");
-  weatherDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("weather-output");
 
   try {
     // Get user's location
@@ -184,26 +280,31 @@ async function getWeather() {
               <p><strong>Wind Speed:</strong> ${windMph} mph</p>
               <p><strong>Location:</strong> ${cityName}</p>
             `;
+            stampCardFromOutput("weather-output");
           } else {
             weatherDiv.innerHTML = "<p>Error fetching weather data</p>";
+            stampCardFromOutput("weather-output");
           }
         } catch (error) {
           weatherDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+          stampCardFromOutput("weather-output");
         }
       },
       (error) => {
         weatherDiv.innerHTML = `<p>Error: Could not get location - ${error.message}</p>`;
+        stampCardFromOutput("weather-output");
       },
     );
   } catch (error) {
     weatherDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+    stampCardFromOutput("weather-output");
   }
 }
 
 // Movies API Function
 async function getMovies() {
   const moviesDiv = document.getElementById("movies-output");
-  moviesDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("movies-output");
 
   const TMDB_KEY = "a7d90711eec7ca892b1634e50879df0b";
 
@@ -250,17 +351,17 @@ async function getMovies() {
     }
   } catch (error) {
     moviesDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("movies-output");
   }
 }
-
-
 
 // Jobs API Function (RemoteOK)
 async function getJobInfo() {
   const jobsDiv = document.getElementById("jobs-output");
   const keyword = document.getElementById("job-search").value.trim();
 
-  jobsDiv.innerHTML = "<p>Loading...</p>";
+  setLoadingSkeleton("jobs-output");
 
   try {
     const tag = keyword
@@ -275,7 +376,6 @@ async function getJobInfo() {
     }
 
     const data = await response.json();
-    // First element is API metadata; jobs start at index 1
     const jobs = data.slice(1, 4);
 
     if (jobs.length === 0) {
@@ -292,7 +392,9 @@ async function getJobInfo() {
       const company = job.company || "Unknown Company";
       const location = job.location || "Remote";
       const url = job.url || "#";
-      const tags = Array.isArray(job.tags) ? job.tags.slice(0, 4).join(", ") : "";
+      const tags = Array.isArray(job.tags)
+        ? job.tags.slice(0, 4).join(", ")
+        : "";
 
       card.innerHTML = `
         <p><strong><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></strong></p>
@@ -303,70 +405,78 @@ async function getJobInfo() {
     });
   } catch (error) {
     jobsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("jobs-output");
   }
 }
 
+// Bible Verse API Function (bible-api.com)
+async function getBibleVerse() {
+  const bibleDiv = document.getElementById("events-output");
+  setLoadingSkeleton("events-output");
 
-// Eventbrite Local Events Function
-async function getLocalEvents() {
-  const eventsDiv = document.getElementById("events-output");
-  eventsDiv.innerHTML = "<p>Getting your location...</p>";
+  const versePool = [
+    "John 3:16",
+    "Psalm 23:1",
+    "Proverbs 3:5-6",
+    "Romans 8:28",
+    "Philippians 4:13",
+    "Jeremiah 29:11",
+    "Isaiah 41:10",
+    "Matthew 11:28",
+    "Psalm 46:1",
+    "2 Timothy 1:7",
+    "Romans 12:2",
+    "Joshua 1:9",
+    "Psalm 119:105",
+    "1 Peter 5:7",
+    "Isaiah 40:31",
+    "Lamentations 3:22-23",
+    "Hebrews 11:1",
+    "2 Corinthians 5:7",
+    "Galatians 5:22-23",
+    "Colossians 3:23",
+    "Psalm 34:8",
+    "James 1:5",
+    "Ephesians 2:8-9",
+    "Romans 10:9",
+    "John 14:6",
+    "Matthew 6:33",
+    "Psalm 27:1",
+    "Isaiah 26:3",
+    "Deuteronomy 31:6",
+    "1 Thessalonians 5:16-18",
+    "Philippians 4:6-7",
+    "Romans 15:13",
+    "Psalm 91:1",
+  ];
 
-  const EVENTBRITE_TOKEN = "C43EBROAGRIO3UWWZUXS";
+  const reference = versePool[Math.floor(Math.random() * versePool.length)];
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords;
-      eventsDiv.innerHTML = "<p>Loading events...</p>";
+  try {
+    const response = await fetch(
+      `https://bible-api.com/${encodeURIComponent(reference)}?translation=kjv`,
+    );
 
-      try {
-        const response = await fetch(
-          `https://www.eventbriteapi.com/v3/events/search/?token=${EVENTBRITE_TOKEN}&location.latitude=${latitude}&location.longitude=${longitude}&location.within=10mi&sort_by=date&expand=venue&page_size=3`,
-        );
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
 
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
+    const data = await response.json();
+    const text = (data.text || "").replace(/\s+/g, " ").trim();
 
-        const data = await response.json();
-        const events = data.events || [];
+    if (!text) {
+      bibleDiv.innerHTML = "<p>No verse returned — try again</p>";
+      return;
+    }
 
-        if (events.length === 0) {
-          eventsDiv.innerHTML = "<p>No events found nearby</p>";
-          return;
-        }
-
-        eventsDiv.innerHTML = "";
-        events.forEach((event) => {
-          const card = document.createElement("div");
-          card.className = "event-card";
-
-          const name = event.name?.text || "Unnamed Event";
-          const url = event.url || "#";
-          const start = event.start?.local
-            ? new Date(event.start.local).toLocaleString([], {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "TBD";
-          const venue = event.venue?.name || "";
-          const address = event.venue?.address?.localized_address_display || "";
-
-          card.innerHTML = `
-            <p><strong><a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a></strong></p>
-            <p>📅 ${start}</p>
-            ${venue ? `<p>📍 ${venue}${address ? ` — ${address}` : ""}</p>` : ""}
-          `;
-          eventsDiv.appendChild(card);
-        });
-      } catch (error) {
-        eventsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
-      }
-    },
-    (error) => {
-      eventsDiv.innerHTML = `<p>Error: Could not get location — ${error.message}</p>`;
-    },
-  );
+    bibleDiv.innerHTML = `
+      <p style="font-style:italic;">"${text}"</p>
+      <p style="text-align:right; font-weight:bold; margin-top:0.5rem;">— ${data.reference}</p>
+    `;
+  } catch (error) {
+    bibleDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("events-output");
+  }
 }

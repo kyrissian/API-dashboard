@@ -10,7 +10,17 @@
 </head>
 
 <body>
-    <h1 class="main-title">JavaScript API Dashboard</h1>
+    <h1 class="main-title">~Kathy's JavaScript API Dashboard ~</h1>
+    <p class="main-subtitle">My personal API playground with a little extra sparkle! ✨</p>
+    <div class="top-controls">
+        <button class="shuffle-btn" onclick="shuffleAllApis()">Shuffle All APIs</button>
+        <label class="theme-label" for="theme-select">Theme</label>
+        <select id="theme-select" class="theme-select">
+            <option value="electric">Electric</option>
+            <option value="sunset">Sunset</option>
+            <option value="midnight">Midnight</option>
+        </select>
+    </div>
     <div class="grid-container">
 
         <section class="grid-item" id="dog-api">
@@ -57,8 +67,8 @@
         </section>
 
         <section class="grid-item" id="events-api">
-            <h2>🎟️ Local Events</h2>
-            <button onclick="getLocalEvents()">Find Events Near Me</button>
+            <h2>📖 Random Bible Verse</h2>
+            <button onclick="getBibleVerse()">Get Verse</button>
             <div class="output" id="events-output"></div>
         </section>
     </div>
