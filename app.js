@@ -683,7 +683,7 @@ async function getMusic() {
 
     const trackListHTML = tracks
       ? tracks
-          .slice(0, 5)
+          .slice(0, 3)
           .map(
             (t, i) =>
               `<li style="font-size:0.85rem; padding:2px 0;">${i + 1}. ${t.strTrack}${
@@ -706,7 +706,7 @@ async function getMusic() {
         </div>
       </div>
       ${bio ? `<p style="margin-top:0.6rem; font-size:0.82rem; color:#ccc;">${bio}</p>` : ""}
-      ${trackListHTML ? `<p style="margin-top:0.6rem; font-size:0.85rem;"><strong>Top Tracks:</strong></p><ol style="margin:0.25rem 0 0 1rem; padding:0;">${trackListHTML}</ol>` : ""}
+      ${trackListHTML ? `<p style="margin-top:0.6rem; font-size:0.85rem;"><strong>Top Track:</strong></p><ol style="margin:0.25rem 0 0 1rem; padding:0;">${trackListHTML}</ol>` : ""}
     `;
   } catch (error) {
     musicDiv.innerHTML = `<p>Error: ${error.message}</p>`;
