@@ -49,14 +49,18 @@ function applyTheme(themeName) {
 }
 
 function shuffleAllApis() {
-  getDogImage();
   getCatImage();
   getCatFact();
   getJoke();
   getWeather();
   getMovies();
   getJobInfo();
+  getDefinition();
   getBibleVerse();
+  getRecipe();
+  getMusic();
+  getChurchCalendar();
+  getMotivationalQuote();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -84,28 +88,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
 
-// Dog API Function
-async function getDogImage() {
-  const dogImgDiv = document.getElementById("dog-output");
-  setLoadingSkeleton("dog-output", { includeImage: true });
-
-  try {
-    const response = await fetch("https://dog.ceo/api/breeds/image/random");
-    const data = await response.json();
-
-    if (data.status === "success") {
-      dogImgDiv.innerHTML = `<img src="${data.message}" alt="Random Dog" style="max-width: 100%; height: auto;">`;
-    } else {
-      dogImgDiv.innerHTML = "<p>Error fetching dog image</p>";
-    }
-  } catch (error) {
-    dogImgDiv.innerHTML = `<p>Error: ${error.message}</p>`;
-  } finally {
-    stampCardFromOutput("dog-output");
+  const wordSearchInput = document.getElementById("word-search");
+  if (wordSearchInput) {
+    wordSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        getDefinition();
+      }
+    });
   }
-}
+
+  const recipeSearchInput = document.getElementById("recipe-search");
+  if (recipeSearchInput) {
+    recipeSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        getRecipe();
+      }
+    });
+  }
+
+  const musicSearchInput = document.getElementById("music-search");
+  if (musicSearchInput) {
+    musicSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        getMusic();
+      }
+    });
+  }
+});
 
 // Cat API Function
 async function getCatImage() {
@@ -209,6 +222,78 @@ async function getJoke() {
     jokeDiv.innerHTML = `<p>Error: ${error.message}</p>`;
   } finally {
     stampCardFromOutput("joke-output");
+  }
+}
+
+// Dictionary API Function (Free Dictionary API)
+async function getDefinition() {
+  const defDiv = document.getElementById("definition-output");
+  const defaultWords = [
+    "serendipity",
+    "ephemeral",
+    "resilience",
+    "luminous",
+    "tenacity",
+  ];
+  const word =
+    document.getElementById("word-search").value.trim() ||
+    defaultWords[Math.floor(Math.random() * defaultWords.length)];
+
+  setLoadingSkeleton("definition-output");
+
+  try {
+    const response = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+    );
+
+    if (response.status === 404) {
+      defDiv.innerHTML = `<p>No definition found for "<strong>${word}</strong>" — try another word!</p>`;
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const entry = data[0];
+    const phonetic =
+      entry.phonetic || entry.phonetics?.find((p) => p.text)?.text || "";
+
+    defDiv.innerHTML = "";
+
+    const wordHeader = document.createElement("p");
+    wordHeader.innerHTML = `<strong style="font-size:1.2rem;">${entry.word}</strong>${phonetic ? ` <span style="color:#aaa;">${phonetic}</span>` : ""}`;
+    defDiv.appendChild(wordHeader);
+
+    entry.meanings.slice(0, 2).forEach((meaning) => {
+      const partEl = document.createElement("p");
+      partEl.innerHTML = `<em>${meaning.partOfSpeech}</em>`;
+      partEl.style.marginTop = "0.5rem";
+      defDiv.appendChild(partEl);
+
+      meaning.definitions.slice(0, 2).forEach((def, i) => {
+        const defEl = document.createElement("p");
+        defEl.style.fontSize = "0.9rem";
+        defEl.style.marginLeft = "0.75rem";
+        defEl.textContent = `${i + 1}. ${def.definition}`;
+        defDiv.appendChild(defEl);
+
+        if (def.example) {
+          const exEl = document.createElement("p");
+          exEl.style.fontSize = "0.82rem";
+          exEl.style.fontStyle = "italic";
+          exEl.style.color = "#aaa";
+          exEl.style.marginLeft = "0.75rem";
+          exEl.textContent = `"${def.example}"`;
+          defDiv.appendChild(exEl);
+        }
+      });
+    });
+  } catch (error) {
+    defDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("definition-output");
   }
 }
 
@@ -478,5 +563,277 @@ async function getBibleVerse() {
     bibleDiv.innerHTML = `<p>Error: ${error.message}</p>`;
   } finally {
     stampCardFromOutput("events-output");
+  }
+}
+
+// Recipe API Function (TheMealDB)
+async function getRecipe() {
+  const recipeDiv = document.getElementById("recipe-output");
+  const query = document.getElementById("recipe-search").value.trim();
+
+  setLoadingSkeleton("recipe-output", { includeImage: true });
+
+  try {
+    const url = query
+      ? `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`
+      : "https://www.themealdb.com/api/json/v1/1/random.php";
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const meal = data.meals?.[0];
+
+    if (!meal) {
+      recipeDiv.innerHTML = `<p>No recipe found for "<strong>${query}</strong>" — try another ingredient or dish!</p>`;
+      return;
+    }
+
+    // Build ingredients list (up to 8 non-empty entries)
+    const ingredients = [];
+    for (let i = 1; i <= 20; i++) {
+      const ingredient = meal[`strIngredient${i}`]?.trim();
+      const measure = meal[`strMeasure${i}`]?.trim();
+      if (ingredient) {
+        ingredients.push(measure ? `${measure} ${ingredient}` : ingredient);
+      }
+      if (ingredients.length === 8) break;
+    }
+
+    // Truncate instructions to a preview
+    const instructions = meal.strInstructions
+      ? meal.strInstructions
+          .replace(/\r\n/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 180) + "…"
+      : "";
+
+    recipeDiv.innerHTML = `
+      <div style="display:flex; gap:0.75rem; align-items:flex-start; flex-wrap:wrap;">
+        ${meal.strMealThumb ? `<img src="${meal.strMealThumb}/preview" alt="${meal.strMeal}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; flex-shrink:0;">` : ""}
+        <div>
+          <p><strong style="font-size:1.05rem;">${meal.strMeal}</strong></p>
+          <p style="font-size:0.85rem; color:#aaa;">${meal.strCategory} &bull; ${meal.strArea} cuisine</p>
+        </div>
+      </div>
+      <p style="margin-top:0.6rem; font-size:0.85rem;"><strong>Ingredients:</strong> ${ingredients.join(", ")}</p>
+      ${instructions ? `<p style="margin-top:0.5rem; font-size:0.82rem; color:#ccc;">${instructions}</p>` : ""}
+      ${meal.strYoutube ? `<p style="margin-top:0.5rem; font-size:0.85rem;"><a href="${meal.strYoutube}" target="_blank" rel="noopener noreferrer">▶ Watch on YouTube</a></p>` : ""}
+    `;
+  } catch (error) {
+    recipeDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("recipe-output");
+  }
+}
+
+// Music API Function (TheAudioDB)
+async function getMusic() {
+  const musicDiv = document.getElementById("music-output");
+  const defaultArtists = [
+    "Coldplay",
+    "Beyonce",
+    "Daft Punk",
+    "Adele",
+    "The Beatles",
+  ];
+  const query =
+    document.getElementById("music-search").value.trim() ||
+    defaultArtists[Math.floor(Math.random() * defaultArtists.length)];
+
+  setLoadingSkeleton("music-output", { includeImage: true });
+
+  try {
+    const [artistRes, tracksRes] = await Promise.all([
+      fetch(
+        `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(query)}`,
+      ),
+      fetch(
+        `https://www.theaudiodb.com/api/v1/json/123/track-top10.php?s=${encodeURIComponent(query)}`,
+      ),
+    ]);
+
+    if (!artistRes.ok || !tracksRes.ok) {
+      throw new Error("Request failed");
+    }
+
+    const artistData = await artistRes.json();
+    const tracksData = await tracksRes.json();
+
+    const artist = artistData.artists?.[0];
+    const tracks = tracksData.track;
+
+    if (!artist) {
+      musicDiv.innerHTML = `<p>No artist found for "<strong>${query}</strong>" — try another name!</p>`;
+      return;
+    }
+
+    const thumb = artist.strArtistThumb ? `${artist.strArtistThumb}/small` : "";
+    const genre = [artist.strGenre, artist.strStyle]
+      .filter(Boolean)
+      .join(" · ");
+    const country = artist.strCountry || "";
+    const bio = artist.strBiographyEN
+      ? artist.strBiographyEN.replace(/\s+/g, " ").trim().slice(0, 160) + "…"
+      : "";
+
+    const trackListHTML = tracks
+      ? tracks
+          .slice(0, 5)
+          .map(
+            (t, i) =>
+              `<li style="font-size:0.85rem; padding:2px 0;">${i + 1}. ${t.strTrack}${
+                t.intDuration
+                  ? ` <span style="color:#aaa;">(${Math.floor(t.intDuration / 60000)}:${String(
+                      Math.floor((t.intDuration % 60000) / 1000),
+                    ).padStart(2, "0")})</span>`
+                  : ""
+              }</li>`,
+          )
+          .join("")
+      : "";
+
+    musicDiv.innerHTML = `
+      <div style="display:flex; gap:0.75rem; align-items:flex-start; flex-wrap:wrap;">
+        ${thumb ? `<img src="${thumb}" alt="${artist.strArtist}" style="width:72px; height:72px; object-fit:cover; border-radius:50%; flex-shrink:0;">` : ""}
+        <div>
+          <p><strong style="font-size:1.1rem;">${artist.strArtist}</strong></p>
+          ${genre ? `<p style="font-size:0.82rem; color:#aaa;">${genre}${country ? " · " + country : ""}</p>` : ""}
+        </div>
+      </div>
+      ${bio ? `<p style="margin-top:0.6rem; font-size:0.82rem; color:#ccc;">${bio}</p>` : ""}
+      ${trackListHTML ? `<p style="margin-top:0.6rem; font-size:0.85rem;"><strong>Top Tracks:</strong></p><ol style="margin:0.25rem 0 0 1rem; padding:0;">${trackListHTML}</ol>` : ""}
+    `;
+  } catch (error) {
+    musicDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("music-output");
+  }
+}
+
+// Church Calendar API Function (calapi.inadiutorium.cz)
+async function getChurchCalendar() {
+  const calDiv = document.getElementById("church-calendar-output");
+  setLoadingSkeleton("church-calendar-output");
+
+  const seasonLabels = {
+    advent: "Advent",
+    christmas: "Christmas",
+    ordinary: "Ordinary Time",
+    lent: "Lent",
+    triduum: "Paschal Triduum",
+    easter: "Easter",
+  };
+
+  const colourEmoji = {
+    green: "🟢",
+    violet: "🟣",
+    white: "⚪",
+    red: "🔴",
+    rose: "🟠",
+    black: "⚫",
+  };
+
+  try {
+    const response = await fetch(
+      "http://calapi.inadiutorium.cz/api/v0/en/calendars/default/today",
+    );
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const dateStr = new Date(data.date).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+
+    const season = seasonLabels[data.season] || data.season || "";
+    const weekInfo = data.season_week ? `Week ${data.season_week}` : "";
+    const celebrations = data.celebrations || [];
+    const saintCelebrations = celebrations.filter((celebration) => {
+      const title = (celebration.title || "").toLowerCase();
+      return (
+        title.includes("saint") ||
+        title.includes("st.") ||
+        title.includes("martyrs") ||
+        title.includes("apostles")
+      );
+    });
+
+    const celebrationsHTML = celebrations
+      .map((c) => {
+        const emoji = colourEmoji[c.colour] || "✨";
+        const rank = c.rank
+          ? `<span style="font-size:0.78rem; color:#aaa;"> (${c.rank})</span>`
+          : "";
+        return `<li style="padding:3px 0;">${emoji} ${c.title}${rank}</li>`;
+      })
+      .join("");
+
+    const saintsHTML = saintCelebrations.length
+      ? `<p style="margin-top:0.6rem;"><strong>Saints and Memorials:</strong></p><ul style="margin:0.35rem 0 0 1rem; padding:0;">${saintCelebrations
+          .map(
+            (celebration) =>
+              `<li style="padding:3px 0;">${celebration.title}</li>`,
+          )
+          .join("")}</ul>`
+      : '<p style="margin-top:0.6rem; font-size:0.82rem; color:#aaa;">No saint feast is listed separately for today in this calendar.</p>';
+
+    calDiv.innerHTML = `
+      <p style="font-size:0.85rem; color:#aaa;">${dateStr}</p>
+      <p style="margin-top:0.4rem;"><strong>${season}</strong>${weekInfo ? " &mdash; " + weekInfo : ""}</p>
+      ${saintsHTML}
+      ${celebrationsHTML ? `<ul style="margin:0.5rem 0 0 1rem; padding:0;">${celebrationsHTML}</ul>` : ""}
+    `;
+  } catch (error) {
+    calDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("church-calendar-output");
+  }
+}
+
+// Motivational Quote API Function (MotivationalAPI)
+async function getMotivationalQuote() {
+  const quoteDiv = document.getElementById("motivational-output");
+  setLoadingSkeleton("motivational-output");
+
+  try {
+    const response = await fetch(
+      "https://gomezmig03.github.io/MotivationalAPI/en.json",
+    );
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    const quotes = await response.json();
+
+    if (!Array.isArray(quotes) || quotes.length === 0) {
+      quoteDiv.innerHTML = "<p>No quote returned. Try again.</p>";
+      return;
+    }
+
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    const category = quote.religion === 1 ? "Catholic" : "Secular";
+
+    quoteDiv.innerHTML = `
+      <p style="font-size:1.05rem; font-style:italic; line-height:1.6;">"${quote.phrase}"</p>
+      <p style="margin-top:0.6rem; font-weight:bold; text-align:right;">- ${quote.author || "Unknown"}</p>
+      <p style="margin-top:0.4rem; font-size:0.8rem; color:#aaa; text-transform:uppercase; letter-spacing:0.08em;">${category}</p>
+    `;
+  } catch (error) {
+    quoteDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+  } finally {
+    stampCardFromOutput("motivational-output");
   }
 }

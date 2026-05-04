@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <h1 class="main-title">~Kathy's JavaScript API Dashboard ~</h1>
+    <h1 class="main-title">~ Kathy's JavaScript API Dashboard ~</h1>
     <p class="main-subtitle">My personal API playground with a little extra sparkle! ✨</p>
     <div class="top-controls">
         <button class="shuffle-btn" onclick="shuffleAllApis()">Shuffle All APIs</button>
@@ -22,12 +22,6 @@
         </select>
     </div>
     <div class="grid-container">
-
-        <section class="grid-item" id="dog-api">
-            <h2>🐶 Random Dog Image</h2>
-            <button onclick="getDogImage()">Get Dog Image</button>
-            <div class="output" id="dog-output"></div>
-        </section>
 
         <section class="grid-item" id="cat-api">
             <h2>🐱 Random Cat Image</h2>
@@ -45,6 +39,13 @@
             <h2>🤣 Random Dad Joke</h2>
             <button onclick="getJoke()">Get Joke</button>
             <div class="output" id="joke-output"></div>
+        </section>
+
+        <section class="grid-item" id="definition-api">
+            <h2>📚 Word Definition</h2>
+            <input type="text" id="word-search" placeholder="e.g. serendipity, resilience..." />
+            <button onclick="getDefinition()">Look Up</button>
+            <div class="output" id="definition-output"></div>
         </section>
 
         <section class="grid-item" id="weather-api">
@@ -70,6 +71,32 @@
             <h2>📖 Random Bible Verse</h2>
             <button onclick="getBibleVerse()">Get Verse</button>
             <div class="output" id="events-output"></div>
+        </section>
+
+        <section class="grid-item" id="recipe-api">
+            <h2>🍽️ Find a Recipe</h2>
+            <input type="text" id="recipe-search" placeholder="e.g. pasta, chicken, tacos..." />
+            <button onclick="getRecipe()">Find Recipe</button>
+            <div class="output" id="recipe-output"></div>
+        </section>
+
+        <section class="grid-item" id="music-api">
+            <h2>🎵 Artist Lookup</h2>
+            <input type="text" id="music-search" placeholder="e.g. The Cure, Paul Oakenfold, ..." />
+            <button onclick="getMusic()">Search Artist</button>
+            <div class="output" id="music-output"></div>
+        </section>
+
+        <section class="grid-item" id="church-calendar-api">
+            <h2>⛪ Today's Liturgical Calendar</h2>
+            <button onclick="getChurchCalendar()">Get Today's Feast</button>
+            <div class="output" id="church-calendar-output"></div>
+        </section>
+
+        <section class="grid-item" id="motivational-api">
+            <h2>💬 Motivational Quote</h2>
+            <button onclick="getMotivationalQuote()">Get Quote</button>
+            <div class="output" id="motivational-output"></div>
         </section>
     </div>
 
